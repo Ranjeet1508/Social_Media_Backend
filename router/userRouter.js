@@ -310,13 +310,19 @@ userRouter.delete("/deleteAccount", authentication, async(req,res) => {
 //--------------backend code for finding the user----------------
 userRouter.get("/findUser/:id", authentication, async(req,res) => {
     try {
-        const user = await UserModel.findById(req.params.id)
+        const user = await UserModel.findById(req.params.id).populate("follower following posts")
         console.log(user)
         if(!user){
-            return res.send("400 error not found");
+            return res.status(400).json({
+                success:false,
+                message:'404 not found'
+            })
         }
         else {
-            res.send(user);
+            return res.status(200).json({
+                success:true,
+                user
+            })
         }
     } catch (error) {
         res.status(500).json({
