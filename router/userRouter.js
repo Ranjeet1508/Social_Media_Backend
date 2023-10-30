@@ -378,7 +378,7 @@ userRouter.post("/forgotPassword", async (req, res) => {
             service: 'gmail',
             auth: {
                 user: 'danavrj1998@gmail.com',
-                pass: 'mcwdflpycwsqfhpn'
+                pass: process.env.GMAIL_PASSWORD
             }
         });
 
