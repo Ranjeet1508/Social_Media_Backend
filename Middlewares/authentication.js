@@ -22,7 +22,7 @@ const authentication = (req,res,next) => {
             req.userID = userID;
             next();
         }
-    });
+    })
 }
 
 module.exports = {
