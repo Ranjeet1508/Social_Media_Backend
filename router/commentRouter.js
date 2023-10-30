@@ -75,11 +75,11 @@ commentRouter.delete("/delete/:id", authentication, async(req,res) => {
         // checking if owner wants to delete the comments
         if(post.owner.toString()===req.userID.toString()){
 
-            if(req.body.commentId===undefined){
+            if(req.query.commentId===undefined){   
                 return res.send("comment id is required")
             }
             post.comments.forEach((item, index) => {
-                if(item._id.toString()===req.body.commentId.toString()){
+                if(item._id.toString()===req.query.commentId.toString()){
                     return post.comments.splice(index,1);
                 }
             })

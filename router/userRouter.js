@@ -1,4 +1,4 @@
-const {Router} = require('express');
+const { Router } = require('express');
 const { UserModel } = require('../model/userModel');
 const userRouter = Router();
 const bcrypt = require('bcrypt');
@@ -6,25 +6,26 @@ let jwt = require('jsonwebtoken');
 const { authentication } = require('../Middlewares/authentication');
 const { PostModel } = require('../model/postModel');
 const crypto = require("crypto");
-const {sendEmail} = require("../Middlewares/send_email")
+const { sendEmail } = require("../Middlewares/send_email")
 const cloudinary = require('cloudinary');
+let nodemailer = require('nodemailer');
 
 require('dotenv').config();
 
 //--------------backend code for signing up-----------------
 
-userRouter.post('/signup', async(req,res) => {
+userRouter.post('/signup', async (req, res) => {
     try {
-        const {name, email, password, avatar} = req.body;
-        let user = await UserModel.findOne({'email':email});
-        if(user){
+        const { name, email, password, avatar } = req.body;
+        let user = await UserModel.findOne({ 'email': email });
+        if (user) {
             return res.status(409).json({
-                error:"Conflict",
-                message:"User already exist"
+                error: "Conflict",
+                message: "User already exist"
             })
         }
-        bcrypt.hash(password, 4, async function(err, hash) {
-            if(err){
+        bcrypt.hash(password, 4, async function (err, hash) {
+            if (err) {
                 return res.status(400).json({
                     error: err,
                     message: "something went wrong"
@@ -36,19 +37,19 @@ userRouter.post('/signup', async(req,res) => {
             let new_user = new UserModel({
                 name,
                 email,
-                password:hash,
-                avatar: {public_id: myCloud.public_id, url:myCloud.secure_url},
+                password: hash,
+                avatar: { public_id: myCloud.public_id, url: myCloud.secure_url },
             })
             await new_user.save()
         });
         res.status(200).json({
-            success:true,
-            message:"Signup Successfull"
+            success: true,
+            message: "Signup Successfull"
         })
-        
+
     } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: "Internal Sever Error",
             error: error.message
         })
@@ -58,36 +59,34 @@ userRouter.post('/signup', async(req,res) => {
 
 
 
-
-
 //--------------backend code for login--------------- 
-userRouter.post('/login', async (req,res) => {
+userRouter.post('/login', async (req, res) => {
     try {
-        const {email,password} = req.body;
-        const isUser = await UserModel.findOne({email}).populate("follower following posts");
-        if(!isUser){
+        const { email, password } = req.body;
+        const isUser = await UserModel.findOne({ email }).populate("follower following posts");
+        if (!isUser) {
             return res.status(400).json({
-                success:false,
-                message:"User does not exist!"
+                success: false,
+                message: "User does not exist!"
             })
         }
         const hashed_password = isUser.password;
 
-        bcrypt.compare(password, hashed_password, function(err, result) {
-            if(err){
+        bcrypt.compare(password, hashed_password, function (err, result) {
+            if (err) {
                 return res.status(400).json({
                     error: err,
                     message: "something went wrong"
                 })
             }
-            if(!result){
+            if (!result) {
                 return res.status(401).json({
                     message: "Wrong Credentials",
                     error: "Unauthorized",
-                    success:"false"
+                    success: "false"
                 })
-            } 
-            else{
+            }
+            else {
                 let token = jwt.sign({ userID: isUser._id }, process.env.SECRET_KEY);
                 return res.status(200).json({
                     success: true,
@@ -99,7 +98,7 @@ userRouter.post('/login', async (req,res) => {
         });
     } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: "Internal Sever Error",
             error: error.message
         })
@@ -108,23 +107,23 @@ userRouter.post('/login', async (req,res) => {
 
 
 // -------------------backend code for finding the logged in user---------------
-userRouter.get('/me', authentication, async(req,res) => {
+userRouter.get('/me', authentication, async (req, res) => {
     try {
         const user = await UserModel.findById(req.userID).populate("posts follower following");
-        if(!user){
+        if (!user) {
             res.status(404).json({
-                success:false,
-                message:"login again"
+                success: false,
+                message: "login again"
             })
         }
         res.status(200).json({
-            success:true,
+            success: true,
             message: "successfull",
             user
         })
     } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: "Internal Sever Error",
             error: error.message
         })
@@ -133,16 +132,16 @@ userRouter.get('/me', authentication, async(req,res) => {
 
 
 //-------------------backend code for logout-----------------------------
-userRouter.get('/logout', authentication, async (req,res) => {
+userRouter.get('/logout', authentication, async (req, res) => {
     try {
-       
+
         res.status(200).json({
-            success:true,
+            success: true,
             message: "Logout Successfully",
         })
     } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: "Internal Sever Error",
             error: error.message
         })
@@ -152,36 +151,36 @@ userRouter.get('/logout', authentication, async (req,res) => {
 
 
 //------------------backend code for updating the password------------------------
-userRouter.post('/updatePassword', authentication, async(req,res) => {
+userRouter.post('/updatePassword', authentication, async (req, res) => {
     try {
         const user = await UserModel.findById(req.userID);
-        const {oldPassword, newPassword} = req.body;
+        const { oldPassword, newPassword } = req.body;
 
-        if(!oldPassword || !newPassword){
+        if (!oldPassword || !newPassword) {
             return res.send("either password or newPassword is empty")
         }
         const hashed_password = user.password;
-        bcrypt.compare(oldPassword, hashed_password, function(err, result) {
-            if(!result){
+        bcrypt.compare(oldPassword, hashed_password, function (err, result) {
+            if (!result) {
                 return res.status(400).json({
-                    success:false,
-                    message: "Wrong Credentials",                    
+                    success: false,
+                    message: "Wrong Credentials",
                 })
             }
-            else{
-                bcrypt.hash(newPassword, 4, async function(err, hash) {
+            else {
+                bcrypt.hash(newPassword, 4, async function (err, hash) {
                     user.password = hash;
                     await user.save()
                 });
                 res.status(200).json({
-                    success:true,
+                    success: true,
                     message: "Password updated successfully",
                 })
             }
         });
     } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: "Internal Sever Error",
             error: error.message
         })
@@ -191,18 +190,18 @@ userRouter.post('/updatePassword', authentication, async(req,res) => {
 
 
 //---------------backend code for updating the profile---------------------
-userRouter.post('/updateProfile', authentication, async(req, res) => {
+userRouter.post('/updateProfile', authentication, async (req, res) => {
     try {
         const user = await UserModel.findById(req.userID);
-        const {name, email, avatar} = req.body;
-        if(name){
+        const { name, email, avatar } = req.body;
+        if (name) {
             user.name = name;
         }
-        if(email){
+        if (email) {
             user.email = email;
         }
 
-        if(avatar){
+        if (avatar) {
             await cloudinary.v2.uploader.destroy(user.avatar.public_id);
 
             const myCloud = await cloudinary.v2.uploader.upload(avatar, {
@@ -215,19 +214,21 @@ userRouter.post('/updateProfile', authentication, async(req, res) => {
 
         await user.save();
         res.status(200).json({
-            success:true,
+            success: true,
             message: "Profile updated successfully"
         })
     } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: "Internal Sever Error",
             error: error.message
         })
     }
 })
 
-userRouter.delete("/deleteAccount", authentication, async(req,res) => {
+
+
+userRouter.delete("/deleteAccount", authentication, async (req, res) => {
     try {
         const user = await UserModel.findById(req.userID)
         const posts = user.posts;
@@ -237,96 +238,96 @@ userRouter.delete("/deleteAccount", authentication, async(req,res) => {
 
         //deleting user account
         await cloudinary.v2.uploader.destroy(user.avatar.public_id)
-        await UserModel.findOneAndDelete({"_id":userID});
-        
+        await UserModel.findOneAndDelete({ "_id": userID });
+
 
 
         //removing posts from follwers list
-        for(let i = 0; i<posts.length; i++){
+        for (let i = 0; i < posts.length; i++) {
             const post = await PostModel.findById(posts[i]);
             await cloudinary.v2.uploader.destroy(post.image.public_id)
-            await PostModel.findOneAndDelete({"_id":post._id})
+            await PostModel.findOneAndDelete({ "_id": post._id })
         }
-            
+
 
         //removing user from follower's following list.
-        for(let i = 0; i<follower.length; i++){
+        for (let i = 0; i < follower.length; i++) {
             const followers = await UserModel.findById(follower[i]);
             const index = followers.following.indexOf(userID);
-            followers.following.splice(index,1);
+            followers.following.splice(index, 1);
             await followers.save();
         }
 
         // removing user from following's followers
 
-        for(let i = 0; i<following.length; i++){
+        for (let i = 0; i < following.length; i++) {
             const followings = await UserModel.findById(following[i]);
             const index = followings.follower.indexOf(userID);
-            followings.follower.splice(index,1);
+            followings.follower.splice(index, 1);
             await followings.save();
         }
 
         //removing all comments of the user from all posts
-       const allPosts = await PostModel.find();
+        const allPosts = await PostModel.find();
 
-        for(let i = 0; i<allPosts.length; i++){
+        for (let i = 0; i < allPosts.length; i++) {
             const post = await PostModel.findById(allPosts[i]._id);
 
-            for(let j = 0 ; j<post.comments.length; j++){
-                if(String(post.comments[j].user) === String(userID)){
-                    post.comments.splice(j,1);
+            for (let j = 0; j < post.comments.length; j++) {
+                if (String(post.comments[j].user) === String(userID)) {
+                    post.comments.splice(j, 1);
                 }
             }
             await post.save();
         }
 
-       // removing all likes of the user from all posts
+        // removing all likes of the user from all posts
 
-        for(let i = 0; i<allPosts.length; i++){
+        for (let i = 0; i < allPosts.length; i++) {
             const post = await PostModel.findById(allPosts[i]._id);
 
-            for(let j = 0; j<post.likes.length; j++){
-                if(String(post.likes[j]) === String(userID)){
-                    post.likes.splice(j,1);
+            for (let j = 0; j < post.likes.length; j++) {
+                if (String(post.likes[j]) === String(userID)) {
+                    post.likes.splice(j, 1);
                 }
             }
             await post.save();
         }
 
         res.status(200).json({
-                success:true,
-                message:"Account Deleted Successfully"
-         })
+            success: true,
+            message: "Account Deleted Successfully"
+        })
     } catch (error) {
         res.status(500).json({
-            success:false,
-            message:"Internal server error"
-         })
+            success: false,
+            message: "Internal server error"
+        })
     }
 })
 
 
 
 //--------------backend code for finding the user----------------
-userRouter.get("/findUser/:id", authentication, async(req,res) => {
+userRouter.get("/findUser/:id", authentication, async (req, res) => {
     try {
         const user = await UserModel.findById(req.params.id).populate("follower following posts")
         console.log(user)
-        if(!user){
+        if (!user) {
             return res.status(400).json({
-                success:false,
-                message:'404 not found'
+                success: false,
+                message: '404 not found'
             })
         }
         else {
             return res.status(200).json({
-                success:true,
+                success: true,
                 user
             })
         }
     } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: "Internal Sever Error",
             error: error.message
         })
@@ -337,11 +338,11 @@ userRouter.get("/findUser/:id", authentication, async(req,res) => {
 
 
 //-----------------backend code for finding all the user----------------------
-userRouter.get("/allUser", authentication, async(req,res) => {
+userRouter.get("/allUser", authentication, async (req, res) => {
     try {
         const users = await UserModel.find({ _id: { $ne: req.userID } });
         console.log(users)
-        if(!users){
+        if (!users) {
             return res.send("400 error not found");
         }
         else {
@@ -349,7 +350,7 @@ userRouter.get("/allUser", authentication, async(req,res) => {
         }
     } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: "Internal Sever Error",
             error: error.message
         })
@@ -361,43 +362,50 @@ userRouter.get("/allUser", authentication, async(req,res) => {
 
 
 //-------------backend code for resetting the password when forgot-------------------
-userRouter.post("/forgotPassword", async(req,res) => {
+userRouter.post("/forgotPassword", async (req, res) => {
     try {
-        const {email} = req.body;
-        let user = await UserModel.findOne({email})
-        if(!user){
+        const { email } = req.body;
+        let user = await UserModel.findOne({ email })
+        if (!user) {
             return res.send("user not found")
         }
-        // creating a resetToken and saving it in the userModel
-        const resetToken = crypto.randomBytes(20).toString("hex");
-        console.log(resetToken);
 
-        user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-        user.resetPasswordExpire = Date.now() + 5*60*1000;
-
+        let resetPasswordToken = jwt.sign({ userID: user._id }, process.env.SECRET_KEY, { expiresIn: 600 });
+        user.resetToken = resetPasswordToken
         await user.save();
 
-        const resetURL = `${req.protocol}://${req.get("host")}/api/v1/password/reset/${user.resetPasswordToken}`;
-
-        const message = `Reset your password on this link\n\n ${resetURL}`
-
-        // sending the message to Email
-            try {
-                await sendEmail({
-                    email: user.email,
-                    subject: "Reset Password",
-                    message
-                })
-                res.send(`email sent to ${user.email}`)
-            } catch (error) {
-                user.resetPasswordToken = undefined;
-                user.resetPasswordExpire = undefined;
-                user.save();
-                res.send("500 internal server error")
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'danavrj1998@gmail.com',
+                pass: 'mcwdflpycwsqfhpn'
             }
+        });
+
+        let resetPasswordLink = `http://localhost:3000/resetPassword/${resetPasswordToken}`
+
+        let mailOptions = {
+            from: 'danavrj1998@gmail.com',
+            to: email,
+            subject: 'Forgot password Link',
+            text: `Use the given link to reset your password ${resetPasswordLink}  \n valid for 10 minute only`
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+            } else {
+                return res.status(200).json({
+                    success: true,
+                    message: "sent successfully"
+                })
+            }
+        });
+
+
     } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: "Internal Sever Error",
             error: error.message
         })
@@ -406,28 +414,41 @@ userRouter.post("/forgotPassword", async(req,res) => {
 
 
 
-userRouter.get("/resetPassword/:token", async (req,res) => {
+userRouter.post("/resetPassword/:token", async (req, res) => {
     try {
-        const resetPasswordToken = crypto.createHash("sha256").update("req.params.token").digest("hex");
+        const { password } = req.body;
+        const token = req.params.token;
+        jwt.verify(token, process.env.SECRET_KEY, async function (err, decoded) {
+            if (err) {
+                return res.status(401).json({
+                    success: false,
+                    message: "token expired"
+                })
+            }
+            else {
+                const { userID } = decoded;
+                req.userID = userID
+                const user = await UserModel.findById(req.userID);
+                if (!user) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "token expired"
+                    })
+                }
+                bcrypt.hash(password, 4, async function (err, hash) {
+                    user.password = hash;
+                    await user.save()
 
-        const user = await UserModel.findOne({
-            resetPasswordToken,
-            resetPasswordExpire: {$gt: Date.now()}
-        })
-
-        if(!user){
-            return res.send("Token is invalid or expires");
-        }
-        bcrypt.hash(newPassword, 4, async function(err, hash) {
-            user.password = hash;
-            user.resetPasswordExpire = undefined;
-            user.resetPasswordToken = undefined;
-            await user.save()
-            res.send("password updated successfully");
+                    res.status(200).json({
+                        success: true,
+                        message: "Password Reset successfully",
+                    });
+                })
+            }
         });
     } catch (error) {
         res.status(500).json({
-            success:false,
+            success: false,
             message: "Internal Sever Error",
             error: error.message
         })
