@@ -21,7 +21,7 @@ userRouter.post('/signup', async (req, res) => {
             return res.status(409).json({
                 error: "Conflict",
                 message: "User already exist"
-            })
+            })            
         }
         bcrypt.hash(password, 4, async function (err, hash) {
             if (err) {
@@ -377,7 +377,7 @@ userRouter.post("/forgotPassword", async (req, res) => {
             service: 'gmail',
             auth: {
                 user: 'danavrj1998@gmail.com',
-                pass: process.env.GMAIL_PASSWORD
+                pass: 'mcwdflpycwsqfhpn'
             }
         });
 

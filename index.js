@@ -12,9 +12,9 @@ const cloudinary = require("cloudinary");
 const PORT = process.env.PORT;
 
 cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.CLOUD_API_KEY,
-    api_secret: process.env.CLOUD_API_SECRET,
+    cloud_name: 'du1wrpcx1',
+    api_key: '386637265454812',
+    api_secret: 'oc1HZHwo6ppwSoWbZXgPF6L5ogM',
 })
 
 
