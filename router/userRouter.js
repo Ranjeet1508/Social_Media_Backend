@@ -6,7 +6,6 @@ let jwt = require('jsonwebtoken');
 const { authentication } = require('../Middlewares/authentication');
 const { PostModel } = require('../model/postModel');
 const crypto = require("crypto");
-const { sendEmail } = require("../Middlewares/send_email")
 const cloudinary = require('cloudinary');
 let nodemailer = require('nodemailer');
 
