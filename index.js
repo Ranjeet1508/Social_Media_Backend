@@ -6,7 +6,6 @@ const { userRouter } = require('./router/userRouter');
 const { followRouter } = require('./router/followRouter');
 const { commentRouter } = require('./router/commentRouter');
 const cors = require('cors')
-const cookieParser = require('cookie-parser');
 const cloudinary = require("cloudinary");
 
 
@@ -26,8 +25,12 @@ app.use(cors({
 }))
 
 app.use(express.json({limit: '5mb'}));
-app.use(cookieParser())
 app.use(express.urlencoded({limit: '5mb', extended: true}));
+
+
+app.use('/', (req,res) => {
+    res.send("This is Ranjeet's social media api")
+})
 
 app.use('/user', userRouter)
 app.use('/post',postRouter);
