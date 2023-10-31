@@ -5,7 +5,7 @@ const { postRouter } = require('./router/postRouter');
 const { userRouter } = require('./router/userRouter');
 const { followRouter } = require('./router/followRouter');
 const { commentRouter } = require('./router/commentRouter');
-const cors = require('cors')
+const cors = require('cors');
 const cloudinary = require("cloudinary");
 
 
@@ -26,7 +26,6 @@ app.use(cors({
 
 app.use(express.json({limit: '5mb'}));
 app.use(express.urlencoded({limit: '5mb', extended: true}));
-
 
 app.use('/user', userRouter)
 app.use('/post',postRouter);
