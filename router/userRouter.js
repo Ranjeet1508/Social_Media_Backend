@@ -11,7 +11,7 @@ let nodemailer = require('nodemailer');
 
 require('dotenv').config();
 
-//--------------backend code for signing up-----------------
+//-----------------backend code for signing up-----------------
 
 userRouter.post('/signup', async (req, res) => {
     try {
