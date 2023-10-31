@@ -337,7 +337,7 @@ userRouter.get("/findUser/:id", authentication, async (req, res) => {
 
 
 //-----------------backend code for finding all the user----------------------
-userRouter.get("/allUser", authentication, async (req, res) => {
+userRouter.get("/allUser",  async (req, res) => {
     try {
         const users = await UserModel.find({ _id: { $ne: req.userID } });
         console.log(users)
