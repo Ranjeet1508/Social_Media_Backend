@@ -28,10 +28,6 @@ app.use(express.json({limit: '5mb'}));
 app.use(express.urlencoded({limit: '5mb', extended: true}));
 
 
-app.use('/', (req,res) => {
-    res.send("This is Ranjeet's social media api")
-})
-
 app.use('/user', userRouter)
 app.use('/post',postRouter);
 app.use('/follow',followRouter)
