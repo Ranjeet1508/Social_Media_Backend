@@ -382,7 +382,7 @@ userRouter.post("/forgotPassword", async (req, res) => {
             }
         });
 
-        let resetPasswordLink = `http://localhost:3000/resetPassword/${resetPasswordToken}`
+        let resetPasswordLink = `https://tasty-fez-goat.cyclic.app/resetPassword/${resetPasswordToken}`
 
         let mailOptions = {
             from: 'danavrj1998@gmail.com',
